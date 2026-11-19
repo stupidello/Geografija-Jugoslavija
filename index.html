@@ -222,6 +222,11 @@ const TOWNS2=[["Mladenovac",44.4386,20.6992],["Obrenovac",44.6549,20.2002],["Laz
 ["Vladičin Han",42.7078,22.0633],["Surdulica",42.6906,22.1708],["Bosilegrad",42.5011,22.4724],["Trgovište",42.3642,22.0825],
 ["Bujanovac",42.4592,21.7667],["Preševo",42.3092,21.6492]];
 TOWNS2.forEach(t=>CITIES.push([t[0],t[1],t[2],"RS",0,2]));
+// Srednji nivo: najpoznatije manje opštine (uz velike gradove)
+const MID=new Set(["Mladenovac","Obrenovac","Lazarevac","Vrbas","Bačka Topola","Kula","Apatin","Stara Pazova","Šid","Kanjiža","Novi Bečej","Kovin","Bela Crkva",
+ "Topola","Smederevska Palanka","Velika Plana","Ćuprija","Svilajnac","Despotovac","Ub","Ljig","Bajina Bašta","Požega","Arilje","Zlatibor","Priboj","Nova Varoš",
+ "Sjenica","Tutin","Raška","Vrnjačka Banja","Aleksandrovac","Majdanpek","Donji Milanovac","Golubac","Veliko Gradište","Sokobanja","Aleksinac",
+ "Vlasotince","Surdulica","Dimitrovgrad","Bujanovac","Preševo"]);
 // Planine: [naziv, šir, duž, države] — tačka je najviši ili najpoznatiji vrh
 const MOUNTS=[
 ["Kopaonik",43.2862,20.8092,["RS","XK"]],["Zlatibor",43.6556,19.6633,["RS"]],["Tara",43.9256,19.405,["RS"]],["Fruška gora",45.1565,19.7094,["RS"]],
@@ -287,7 +292,7 @@ const RIVERS=[
 
 /* ===================== STANJE ===================== */
 const REGIONS=[["RS","Srbija"],["HR","Hrvatska"],["BA","BiH"],["ME","Crna Gora"],["SI","Slovenija"],["MK","S. Makedonija"],["YU","Cela Jugoslavija"]];
-const MODES=[["cities","🏙️ Gradovi"],["towns","🏘️ Sva mesta"],["rivers","🌊 Reke"],["mountains","⛰️ Planine"],["countries","🏳️ Države"],["all","⭐ Sve"]];
+const MODES=[["cities","🏙️ Gradovi"],["mid","🏘️ Gradovi i varoši"],["towns","🗺️ Sva mesta"],["rivers","🌊 Reke"],["mountains","⛰️ Planine"],["countries","🏳️ Države"],["all","⭐ Sve"]];
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let opt=Object.assign({region:"RS",mode:"cities",hard:false,relief:true,vol:80},store.get("yu_opt",{}));
 if(opt.region==="XK")opt.region="RS";
@@ -299,6 +304,7 @@ function inRegion(cs){if(opt.region==="YU")return true;const a=Array.isArray(cs)
 function itemsFor(mode){
   const out=[];
   if(mode==="cities"||mode==="all") CITIES.filter(c=>inRegion(c[3])&&c[5]!==2).forEach(c=>out.push({t:"city",name:c[0],c}));
+  if(mode==="mid") CITIES.filter(c=>inRegion(c[3])&&(c[5]!==2||(c[3]==="RS"&&MID.has(c[0])))).forEach(c=>out.push({t:"city",name:c[0],c}));
   if(mode==="towns") CITIES.filter(c=>inRegion(c[3])).forEach(c=>out.push({t:"city",name:c[0],c}));
   if(mode==="mountains"||mode==="all") MOUNTS.filter(m=>inRegion(m[3])).forEach(m=>out.push({t:"mount",name:m[0],c:m}));
   if(mode==="rivers"||mode==="all") RIVERS.filter(r=>inRegion(r[1])).forEach(r=>out.push({t:"river",name:r[0],r}));
@@ -309,7 +315,7 @@ function renderMenu(){
   const rg=$("#regions");rg.innerHTML="";
   REGIONS.forEach(([k,n])=>{const b=document.createElement("button");b.className="chip"+(opt.region===k?" on":"");
     const best=store.get(`yu_best_${k}_${opt.mode}${opt.hard?"_h":""}`,null);
-    b.innerHTML=n+(best!=null?`<small>🏆 ${best}%</small>`:"");b.onclick=()=>{opt.region=k;if((k!=="YU"&&opt.mode==="countries")||(!["RS","YU"].includes(k)&&opt.mode==="towns"))opt.mode="cities";save();renderMenu()};rg.appendChild(b)});
+    b.innerHTML=n+(best!=null?`<small>🏆 ${best}%</small>`:"");b.onclick=()=>{opt.region=k;if((k!=="YU"&&opt.mode==="countries")||(!["RS","YU"].includes(k)&&(opt.mode==="towns"||opt.mode==="mid")))opt.mode="cities";save();renderMenu()};rg.appendChild(b)});
   const df=$("#diffs");df.innerHTML="";
   [[false,"📍 Pin","pogođena ostaju obojena"],[true,"📍 Pin (teško)","pogođena se ne vide i mogu opet da se kliknu"]].forEach(([v,n,d])=>{
     const b=document.createElement("button");b.className="chip"+(opt.hard===v?" on":"");b.innerHTML=`${n}<small>${d}</small>`;
@@ -321,7 +327,7 @@ function renderMenu(){
   const rb=document.createElement("button");rb.className="chip"+(opt.relief?" on":"");rb.innerHTML=`🏔️ Reljef<small>${opt.relief?"uključen":"isključen"}</small>`;
   rb.onclick=()=>{opt.relief=!opt.relief;save();renderMenu()};df.appendChild(rb);
   const md=$("#modes");md.innerHTML="";
-  MODES.forEach(([k,n])=>{if(k==="countries"&&opt.region!=="YU")return;if(k==="towns"&&!["RS","YU"].includes(opt.region))return;const b=document.createElement("button");b.className="chip"+(opt.mode===k?" on":"");
+  MODES.forEach(([k,n])=>{if(k==="countries"&&opt.region!=="YU")return;if((k==="towns"||k==="mid")&&!["RS","YU"].includes(opt.region))return;const b=document.createElement("button");b.className="chip"+(opt.mode===k?" on":"");
     const cnt=itemsFor(k).length;b.innerHTML=`${n}<small>${cnt} pojmova</small>`;b.onclick=()=>{opt.mode=k;save();renderMenu()};md.appendChild(b)});
 }
 function save(){store.set("yu_opt",opt)}
