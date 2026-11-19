@@ -222,6 +222,12 @@ const TOWNS2=[["Mladenovac",44.4386,20.6992],["Obrenovac",44.6549,20.2002],["Laz
 ["Vladičin Han",42.7078,22.0633],["Surdulica",42.6906,22.1708],["Bosilegrad",42.5011,22.4724],["Trgovište",42.3642,22.0825],
 ["Bujanovac",42.4592,21.7667],["Preševo",42.3092,21.6492]];
 TOWNS2.forEach(t=>CITIES.push([t[0],t[1],t[2],"RS",0,2]));
+// Crna Gora: manja mesta (GeoNames) — nivo 2
+const ME2=[["Igalo", 42.4601, 18.5065], ["Zelenika", 42.4514, 18.5767], ["Kumbor", 42.4406, 18.5858], ["Đenovići", 42.4396, 18.614], ["Baošići", 42.4425, 18.63], ["Bijela", 42.4533, 18.6556], ["Kamenari", 42.4667, 18.6728], ["Morinj", 42.4894, 18.6472], ["Risan", 42.515, 18.6956], ["Perast", 42.4869, 18.6992], ["Dobrota", 42.4542, 18.7683], ["Prčanj", 42.4575, 18.7422], ["Stoliv", 42.4697, 18.7111], ["Lepetane", 42.4653, 18.6858], ["Radovići", 42.3933, 18.6703], ["Krašići", 42.4058, 18.6406], ["Rose", 42.4272, 18.5567], ["Bečići", 42.2839, 18.8692], ["Rafailovići", 42.2811, 18.8814], ["Pržno", 42.2675, 18.8933], ["Sveti Stefan", 42.2561, 18.8914], ["Petrovac", 42.2056, 18.9425], ["Buljarica", 42.1986, 18.9653], ["Čanj", 42.1628, 18.9981], ["Sutomore", 42.1428, 19.0467], ["Virpazar", 42.2456, 19.0925], ["Ada Bojana", 41.8642, 19.3611], ["Štoj", 41.9103, 19.2747], ["Krute", 41.9711, 19.1825], ["Dobra Voda", 42.0489, 19.1439], ["Danilovgrad", 42.5538, 19.1461], ["Plav", 42.5969, 19.9442], ["Gusinje", 42.5619, 19.8339], ["Andrijevica", 42.7339, 19.7919], ["Šavnik", 42.9569, 19.0961], ["Plužine", 43.1521, 18.839], ["Mojkovac", 42.9604, 19.5833], ["Tuzi", 42.3658, 19.3297], ["Petnjica", 42.9097, 19.9636], ["Golubovci", 42.3352, 19.231]];
+ME2.forEach(t=>CITIES.push([t[0],t[1],t[2],"ME",0,2]));
+// Crnogorsko primorje (posebna oblast)
+const COAST=new Set(["Herceg Novi","Kotor","Tivat","Budva","Bar","Ulcinj","Igalo", "Zelenika", "Kumbor", "Đenovići", "Baošići", "Bijela", "Kamenari", "Morinj", "Risan", "Perast", "Dobrota", "Prčanj", "Stoliv", "Lepetane", "Radovići", "Krašići", "Rose", "Bečići", "Rafailovići", "Pržno", "Sveti Stefan", "Petrovac", "Buljarica", "Čanj", "Sutomore", "Virpazar", "Ada Bojana", "Štoj", "Krute", "Dobra Voda"]);
+const COAST_MT=new Set(["Lovćen","Orjen","Rumija"]);
 // Srednji nivo: najpoznatije manje opštine (uz velike gradove)
 const MID=new Set(["Mladenovac","Obrenovac","Lazarevac","Vrbas","Bačka Topola","Kula","Apatin","Stara Pazova","Šid","Kanjiža","Novi Bečej","Kovin","Bela Crkva",
  "Topola","Smederevska Palanka","Velika Plana","Ćuprija","Svilajnac","Despotovac","Ub","Ljig","Bajina Bašta","Požega","Arilje","Zlatibor","Priboj","Nova Varoš",
@@ -291,7 +297,7 @@ const RIVERS=[
 ];
 
 /* ===================== STANJE ===================== */
-const REGIONS=[["RS","Srbija"],["HR","Hrvatska"],["BA","BiH"],["ME","Crna Gora"],["SI","Slovenija"],["MK","S. Makedonija"],["YU","Cela Jugoslavija"]];
+const REGIONS=[["RS","Srbija"],["HR","Hrvatska"],["BA","BiH"],["ME","Crna Gora"],["SI","Slovenija"],["MK","S. Makedonija"],["MEP","🏖️ CG primorje"],["YU","Cela Jugoslavija"]];
 const MODES=[["cities","🏙️ Gradovi"],["mid","🏘️ Gradovi i varoši"],["towns","🗺️ Sva mesta"],["rivers","🌊 Reke"],["mountains","⛰️ Planine"],["countries","🏳️ Države"],["all","⭐ Sve"]];
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let opt=Object.assign({region:"RS",mode:"cities",hard:false,relief:true,vol:80},store.get("yu_opt",{}));
@@ -303,6 +309,10 @@ function inRegion(cs){if(opt.region==="YU")return true;const a=Array.isArray(cs)
   return a.includes(opt.region)||(opt.region==="RS"&&a.includes("XK"))}
 function itemsFor(mode){
   const out=[];
+  if(opt.region==="MEP"){
+    if(mode==="cities"||mode==="all")CITIES.filter(c=>c[3]==="ME"&&COAST.has(c[0])).forEach(c=>out.push({t:"city",name:c[0],c}));
+    if(mode==="mountains"||mode==="all")MOUNTS.filter(m=>COAST_MT.has(m[0])).forEach(m=>out.push({t:"mount",name:m[0],c:m}));
+    return out}
   if(mode==="cities"||mode==="all") CITIES.filter(c=>inRegion(c[3])&&c[5]!==2).forEach(c=>out.push({t:"city",name:c[0],c}));
   if(mode==="mid") CITIES.filter(c=>inRegion(c[3])&&(c[5]!==2||(c[3]==="RS"&&MID.has(c[0])))).forEach(c=>out.push({t:"city",name:c[0],c}));
   if(mode==="towns") CITIES.filter(c=>inRegion(c[3])).forEach(c=>out.push({t:"city",name:c[0],c}));
@@ -315,7 +325,7 @@ function renderMenu(){
   const rg=$("#regions");rg.innerHTML="";
   REGIONS.forEach(([k,n])=>{const b=document.createElement("button");b.className="chip"+(opt.region===k?" on":"");
     const best=store.get(`yu_best_${k}_${opt.mode}${opt.hard?"_h":""}`,null);
-    b.innerHTML=n+(best!=null?`<small>🏆 ${best}%</small>`:"");b.onclick=()=>{opt.region=k;if((k!=="YU"&&opt.mode==="countries")||(!["RS","YU"].includes(k)&&(opt.mode==="towns"||opt.mode==="mid")))opt.mode="cities";save();renderMenu()};rg.appendChild(b)});
+    b.innerHTML=n+(best!=null?`<small>🏆 ${best}%</small>`:"");b.onclick=()=>{opt.region=k;if((k!=="YU"&&opt.mode==="countries")||(!["RS","YU"].includes(k)&&opt.mode==="mid")||(!["RS","YU","ME"].includes(k)&&opt.mode==="towns")||(k==="MEP"&&!["cities","mountains","all"].includes(opt.mode)))opt.mode="cities";save();renderMenu()};rg.appendChild(b)});
   const df=$("#diffs");df.innerHTML="";
   [[false,"📍 Pin","pogođena ostaju obojena"],[true,"📍 Pin (teško)","pogođena se ne vide i mogu opet da se kliknu"]].forEach(([v,n,d])=>{
     const b=document.createElement("button");b.className="chip"+(opt.hard===v?" on":"");b.innerHTML=`${n}<small>${d}</small>`;
@@ -327,7 +337,9 @@ function renderMenu(){
   const rb=document.createElement("button");rb.className="chip"+(opt.relief?" on":"");rb.innerHTML=`🏔️ Reljef<small>${opt.relief?"uključen":"isključen"}</small>`;
   rb.onclick=()=>{opt.relief=!opt.relief;save();renderMenu()};df.appendChild(rb);
   const md=$("#modes");md.innerHTML="";
-  MODES.forEach(([k,n])=>{if(k==="countries"&&opt.region!=="YU")return;if((k==="towns"||k==="mid")&&!["RS","YU"].includes(opt.region))return;const b=document.createElement("button");b.className="chip"+(opt.mode===k?" on":"");
+  MODES.forEach(([k,n])=>{if(k==="countries"&&opt.region!=="YU")return;if(k==="mid"&&!["RS","YU"].includes(opt.region))return;
+    if(k==="towns"&&!["RS","YU","ME"].includes(opt.region))return;
+    if(opt.region==="MEP"&&!["cities","mountains","all"].includes(k))return;const b=document.createElement("button");b.className="chip"+(opt.mode===k?" on":"");
     const cnt=itemsFor(k).length;b.innerHTML=`${n}<small>${cnt} pojmova</small>`;b.onclick=()=>{opt.mode=k;save();renderMenu()};md.appendChild(b)});
 }
 function save(){store.set("yu_opt",opt)}
@@ -452,6 +464,9 @@ function bboxFor(items){
   let pts=[];
   const add=(lat,lon)=>pts.push(P(lat,lon));
   if(opt.region==="YU"){add(46.9,13.3);add(40.8,23.1)}
+  else if(opt.region==="MEP"){CITIES.filter(c=>c[3]==="ME"&&COAST.has(c[0])).forEach(c=>add(c[1],c[2]));
+    let x0=Math.min(...pts.map(p=>p[0])),x1=Math.max(...pts.map(p=>p[0])),y0=Math.min(...pts.map(p=>p[1])),y1=Math.max(...pts.map(p=>p[1]));
+    const pad=Math.max(x1-x0,y1-y0)*0.06;return [x0-pad,y0-pad,x1-x0+2*pad,y1-y0+2*pad]}
   else{CITIES.filter(c=>c[3]===opt.region).forEach(c=>add(c[1],c[2]));
 }
   if(opt.region!=="YU"&&GEO){const ids=opt.region==="RS"?["RS","XK"]:[opt.region];const fs=GEO.features.filter(f=>ids.includes(featId(f)));
@@ -488,7 +503,7 @@ function draw(){
     const xk=GEO.features.find(f=>featId(f)==="XK");
     for(const f of GEO.features){const id=featId(f);if((!YU.includes(id)&&!NEIGH.includes(id))||id==="XK")continue;
       const isYU=YU.includes(id);
-      const active=opt.region==="YU"?isYU:id===opt.region;
+      const active=opt.region==="YU"?isYU:(id===opt.region||(opt.region==="MEP"&&id==="ME"));
       // Kosovo i Metohija se crta zajedno sa Srbijom (jedna teritorija)
       const d=id==="RS"?geomPath({type:"Polygon",coordinates:[RS_UNION]}):geomPath(f.geometry);
       const p=el("path",{d,class:"land"+(active?"":" dim")+(qCountries&&isYU?" q":"")},gl);
