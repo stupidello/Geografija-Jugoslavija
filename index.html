@@ -302,11 +302,12 @@ const RIVERS=[
 ];
 
 /* ===================== STANJE ===================== */
-const REGIONS=[["RS","Srbija"],["HR","Hrvatska"],["BA","BiH"],["ME","Crna Gora"],["SI","Slovenija"],["MK","S. Makedonija"],["MEP","🏖️ CG primorje"],["YU","Cela Jugoslavija"]];
-const MODES=[["cities","🏙️ Gradovi"],["mid","🏘️ Gradovi i varoši"],["towns","🗺️ Sva mesta"],["rivers","🌊 Reke"],["mountains","⛰️ Planine"],["countries","🏳️ Države"],["all","⭐ Sve"]];
+const REGIONS=[["RS","Srbija"],["HR","Hrvatska"],["BA","BiH"],["ME","Crna Gora"],["SI","Slovenija"],["MK","S. Makedonija"],["YU","Cela Jugoslavija"]];
+const MODES=[["cities","🏙️ Gradovi"],["mid","🏘️ Gradovi i varoši"],["coast","🏖️ Primorje"],["towns","🗺️ Sva mesta"],["rivers","🌊 Reke"],["mountains","⛰️ Planine"],["countries","🏳️ Države"],["all","⭐ Sve"]];
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let opt=Object.assign({region:"RS",mode:"cities",hard:false,relief:true,vol:80},store.get("yu_opt",{}));
 if(opt.region==="XK")opt.region="RS";
+if(opt.region==="MEP"){opt.region="ME";opt.mode="coast"}
 const $=s=>document.querySelector(s);
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 
@@ -314,10 +315,7 @@ function inRegion(cs){if(opt.region==="YU")return true;const a=Array.isArray(cs)
   return a.includes(opt.region)||(opt.region==="RS"&&a.includes("XK"))}
 function itemsFor(mode){
   const out=[];
-  if(opt.region==="MEP"){
-    if(mode==="cities"||mode==="all")CITIES.filter(c=>c[3]==="ME"&&COAST.has(c[0])).forEach(c=>out.push({t:"city",name:c[0],c}));
-    if(mode==="mountains"||mode==="all")MOUNTS.filter(m=>COAST_MT.has(m[0])).forEach(m=>out.push({t:"mount",name:m[0],c:m}));
-    return out}
+  if(mode==="coast"){if(opt.region==="ME")CITIES.filter(c=>c[3]==="ME"&&COAST.has(c[0])).forEach(c=>out.push({t:"city",name:c[0],c}));return out}
   if(mode==="cities"||mode==="all") CITIES.filter(c=>inRegion(c[3])&&c[5]!==2).forEach(c=>out.push({t:"city",name:c[0],c}));
   if(mode==="mid") CITIES.filter(c=>inRegion(c[3])&&(c[5]!==2||(c[3]==="RS"&&MID.has(c[0])))).forEach(c=>out.push({t:"city",name:c[0],c}));
   if(mode==="towns") CITIES.filter(c=>inRegion(c[3])).forEach(c=>out.push({t:"city",name:c[0],c}));
@@ -330,7 +328,7 @@ function renderMenu(){
   const rg=$("#regions");rg.innerHTML="";
   REGIONS.forEach(([k,n])=>{const b=document.createElement("button");b.className="chip"+(opt.region===k?" on":"");
     const best=store.get(`yu_best_${k}_${opt.mode}${opt.hard?"_h":""}`,null);
-    b.innerHTML=n+(best!=null?`<small>🏆 ${best}%</small>`:"");b.onclick=()=>{opt.region=k;if((k!=="YU"&&opt.mode==="countries")||(!["RS","YU"].includes(k)&&opt.mode==="mid")||(!["RS","YU","ME"].includes(k)&&opt.mode==="towns")||(k==="MEP"&&!["cities","mountains","all"].includes(opt.mode)))opt.mode="cities";save();renderMenu()};rg.appendChild(b)});
+    b.innerHTML=n+(best!=null?`<small>🏆 ${best}%</small>`:"");b.onclick=()=>{opt.region=k;if((k!=="YU"&&opt.mode==="countries")||(!["RS","YU"].includes(k)&&opt.mode==="mid")||(!["RS","YU","ME"].includes(k)&&opt.mode==="towns")||(k!=="ME"&&opt.mode==="coast"))opt.mode="cities";save();renderMenu()};rg.appendChild(b)});
   const df=$("#diffs");df.innerHTML="";
   [[false,"📍 Pin","pogođena ostaju obojena"],[true,"📍 Pin (teško)","pogođena se ne vide i mogu opet da se kliknu"]].forEach(([v,n,d])=>{
     const b=document.createElement("button");b.className="chip"+(opt.hard===v?" on":"");b.innerHTML=`${n}<small>${d}</small>`;
@@ -344,7 +342,7 @@ function renderMenu(){
   const md=$("#modes");md.innerHTML="";
   MODES.forEach(([k,n])=>{if(k==="countries"&&opt.region!=="YU")return;if(k==="mid"&&!["RS","YU"].includes(opt.region))return;
     if(k==="towns"&&!["RS","YU","ME"].includes(opt.region))return;
-    if(opt.region==="MEP"&&!["cities","mountains","all"].includes(k))return;const b=document.createElement("button");b.className="chip"+(opt.mode===k?" on":"");
+    if(k==="coast"&&opt.region!=="ME")return;const b=document.createElement("button");b.className="chip"+(opt.mode===k?" on":"");
     const cnt=itemsFor(k).length;b.innerHTML=`${n}<small>${cnt} pojmova</small>`;b.onclick=()=>{opt.mode=k;save();renderMenu()};md.appendChild(b)});
 }
 function save(){store.set("yu_opt",opt)}
@@ -476,7 +474,7 @@ function bboxFor(items){
   let pts=[];
   const add=(lat,lon)=>pts.push(P(lat,lon));
   if(opt.region==="YU"){add(46.9,13.3);add(40.8,23.1)}
-  else if(opt.region==="MEP"){CITIES.filter(c=>c[3]==="ME"&&COAST.has(c[0])).forEach(c=>add(c[1],c[2]));
+  else if(opt.mode==="coast"){CITIES.filter(c=>c[3]==="ME"&&COAST.has(c[0])).forEach(c=>add(c[1],c[2]));
     let x0=Math.min(...pts.map(p=>p[0])),x1=Math.max(...pts.map(p=>p[0])),y0=Math.min(...pts.map(p=>p[1])),y1=Math.max(...pts.map(p=>p[1]));
     const pad=Math.max(x1-x0,y1-y0)*0.06;return [x0-pad,y0-pad,x1-x0+2*pad,y1-y0+2*pad]}
   else{CITIES.filter(c=>c[3]===opt.region).forEach(c=>add(c[1],c[2]));
@@ -515,7 +513,7 @@ function draw(){
     const xk=GEO.features.find(f=>featId(f)==="XK");
     for(const f of GEO.features){const id=featId(f);if((!YU.includes(id)&&!NEIGH.includes(id))||id==="XK")continue;
       const isYU=YU.includes(id);
-      const active=opt.region==="YU"?isYU:(id===opt.region||(opt.region==="MEP"&&id==="ME"));
+      const active=opt.region==="YU"?isYU:id===opt.region;
       // Kosovo i Metohija se crta zajedno sa Srbijom (jedna teritorija)
       const d=id==="RS"?geomPath({type:"Polygon",coordinates:[RS_UNION]}):geomPath(f.geometry);
       const p=el("path",{d,class:"land"+(active?"":" dim")+(qCountries&&isYU?" q":"")},gl);
