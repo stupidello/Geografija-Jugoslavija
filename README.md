@@ -11,7 +11,8 @@ Pokretanje lokalno: otvori `index.html` preko bilo kog statičkog servera
 ## Izvori podataka
 
 - Granice i deo reka: [Natural Earth](https://www.naturalearthdata.com/) (javno dobro)
-- Reljef: Natural Earth „Cross Blended Hypso with Shaded Relief“ (javno dobro)
+- Reljef: SRTM (CGIAR-CSI), boje po Natural Earth
+- Manje reke i jezera: © OpenStreetMap saradnici (ODbL), preko Geofabrika
 - Gradovi, mesta i planine: [GeoNames](https://www.geonames.org/) (CC BY 4.0)
 - Ostale reke, Boka kotorska i jezera: © [OpenStreetMap](https://www.openstreetmap.org/copyright) saradnici (ODbL)
 - Glas: ElevenLabs
