@@ -707,7 +707,7 @@ function updateTiles(){
     const x0=Math.floor((lonA-ts.lon0)/dg)-1,x1=Math.floor((lonB-ts.lon0)/dg)+1,y0=Math.floor((ts.lat1-latT)/dg)-1,y1=Math.floor((ts.lat1-latB)/dg)+1;
     for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++){const key=tx+"_"+ty;if(!set.has(key)||map.has(key))continue;
       const lon=ts.lon0+tx*dg,lat=ts.lat1-ty*dg,[px,py]=P(lat,lon),[qx,qy]=P(lat-dg,lon+dg);
-      const src="tiles/"+k+"/"+key+".webp";
+      const src="tiles/"+k+"/"+key+".webp?v=2";
       const im=el("image",{href:src,x:px,y:py,width:qx-px+0.02,height:qy-py+0.02,preserveAspectRatio:"none",class:"tile"},T.groups[k]);
       im.setAttributeNS("http://www.w3.org/1999/xlink","href",src);map.set(key,im)}
     // skloni pločice daleko van ekrana, da memorija ostane mala
