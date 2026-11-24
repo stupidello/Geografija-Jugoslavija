@@ -88,7 +88,7 @@ button,select{font-family:inherit;color:inherit}
 .prog{height:4px;background:#e5e7eb}.prog i{display:block;height:100%;width:0;background:var(--good);transition:width .3s}
 #mapbox{flex:1;position:relative;background:var(--sea);touch-action:none;overflow:hidden}
 #relLayer{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-#relInner{position:absolute;left:0;top:0;transform-origin:0 0}
+#relInner{position:absolute;inset:0}
 #relInner img{position:absolute;display:block;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none}
 svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none}
 .zoom{position:absolute;right:10px;bottom:12px;display:flex;flex-direction:column;gap:6px}
@@ -190,7 +190,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 24.11c</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 24.11d</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -662,7 +662,7 @@ function draw(){
     el("path",{d:`M-1e5,-1e5H1e5V1e5H-1e5Z M${b0+1},${b1+1}V${b1+b3-1}H${b0+b2-1}V${b1+1}Z`,"clip-rule":"evenodd"},cp);
     gl.querySelectorAll(".land.dim").forEach(p=>p.setAttribute("clip-path","url(#outRel)"));
     {const [nx,ny]=P(47.6,12.3),[mx]=P(47.6,24.2);el("rect",{x:nx-2000,y:ny-2000,width:mx-nx+4000,height:2000.4,class:"land dim"},gl)}
-    Object.assign(bi.style,{left:reliefBox[0]+"px",top:reliefBox[1]+"px",width:reliefBox[2]+"px",height:reliefBox[3]+"px",display:""});
+    bi._g=reliefBox.slice();bi.style.display="";placeImg(bi);
     // granice ponovo, preko reljefa
     // susedne zemlje: reljef ostaje, ali malo izbledeo da se istakne Jugoslavija
     if(GEO){const xk=GEO.features.find(f=>featId(f)==="XK");if(xk)el("path",{d:geomPath(xk.geometry),class:"bord kos prov"},grel)}
@@ -701,9 +701,14 @@ function draw(){
     const c=el("circle",{cx:x,cy:y,r:4,class:"city"+(it.c[4]?" cap":"")},g);c.dataset.key="city:"+it.name;G.els["city:"+it.name]=c}
 }
 /* --- zum i pomeranje --- */
+function placeImg(im){const g=im._g;if(!g||!REL)return;const {sc,ox,oy}=REL;
+  const l=ox+g[0]*sc,t=oy+g[1]*sc,r=ox+(g[0]+g[2])*sc,b=oy+(g[1]+g[3])*sc;
+  const st=im.style;st.left=l.toFixed(1)+"px";st.top=t.toFixed(1)+"px";st.width=(r-l+0.6).toFixed(1)+"px";st.height=(b-t+0.6).toFixed(1)+"px"}
+let REL=null;
 function syncRel(){if(!vb)return;const b=$("#mapbox").getBoundingClientRect();if(!b.width)return;
-  const sc=Math.min(b.width/vb[2],b.height/vb[3]),ox=(b.width-vb[2]*sc)/2-vb[0]*sc,oy=(b.height-vb[3]*sc)/2-vb[1]*sc;
-  $("#relInner").style.transform=`translate(${ox}px,${oy}px) scale(${sc})`}
+  const sc=Math.min(b.width/vb[2],b.height/vb[3]);
+  REL={sc,ox:(b.width-vb[2]*sc)/2-vb[0]*sc,oy:(b.height-vb[3]*sc)/2-vb[1]*sc};
+  $("#relInner").querySelectorAll("img").forEach(placeImg)}
 function setVB(v){vb=v;svg.setAttribute("viewBox",v.map(n=>n.toFixed(2)).join(" "));syncRel();rescale()}
 function fit(){
   const box=$("#mapbox").getBoundingClientRect();const b=bboxFor();let [x,y,w,h]=b;
@@ -719,22 +724,29 @@ function updateTiles(){
   const on=k=>lvl==="b"||(lvl==="a"&&k==="a");
   for(const k of ["a","b"])T.groups[k].style.display=on(k)?"":"none";
   T.bord.style.display=lvl?"":"none";
-  if(!lvl)return;
+  const bi=$("#baseImg");if(!lvl){if(opt.relief)bi.style.visibility="";return}
+  let cov={a:true,b:true};
   // vidljivi deo mape u stepenima (+ mala rezerva)
   const lonA=vb[0]/(KX*S)+12,lonB=(vb[0]+vb[2])/(KX*S)+12,latT=48-vb[1]/S,latB=48-(vb[1]+vb[3])/S;
   for(const k of ["a","b"]){if(!on(k))continue;
     const ts={lon0:TILESET.lon0,lat1:TILESET.lat1,deg:TILESET[k].deg},dg=ts.deg,map=T[k],set=TSET[k];
     const x0=Math.floor((lonA-ts.lon0)/dg)-1,x1=Math.floor((lonB-ts.lon0)/dg)+1,y0=Math.floor((ts.lat1-latT)/dg)-1,y1=Math.floor((ts.lat1-latB)/dg)+1;
-    for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++){const key=tx+"_"+ty;if(!set.has(key)||map.has(key))continue;
+    for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++){const key=tx+"_"+ty;if(!set.has(key))continue;
+      if(map.has(key)){const m=map.get(key);if(tx>x0&&tx<x1&&ty>y0&&ty<y1&&!(m.complete&&m.naturalWidth))cov[k]=false;continue}
+      if(tx>x0&&tx<x1&&ty>y0&&ty<y1)cov[k]=false;
       const lon=ts.lon0+tx*dg,lat=ts.lat1-ty*dg,[px,py]=P(lat,lon),[qx,qy]=P(lat-dg,lon+dg);
       const src="t7/"+k+"/"+key+".webp";
       const im=document.createElement("img");im.alt="";im.decoding="async";im.className="tile";
-      Object.assign(im.style,{left:px+"px",top:py+"px",width:(qx-px+0.03)+"px",height:(qy-py+0.03)+"px"});
+      im._g=[px,py,qx-px,qy-py];placeImg(im);im.onload=()=>{cancelAnimationFrame(tileRAF);tileRAF=requestAnimationFrame(updateTiles)};
       im.src=src;T.groups[k].appendChild(im);map.set(key,im)}
     // skloni pločice daleko van ekrana, da memorija ostane mala
     if(map.size>(k==="b"?80:60))for(const [key,im] of map){const [tx,ty]=key.split("_").map(Number);
       if(tx<x0-3||tx>x1+3||ty<y0-3||ty>y1+3){im.remove();map.delete(key)}}
   }
+  // ispod učitanih oštrijih pločica ne treba crtati ogromne slike (telefon tada meša pločice)
+  const aOn=on("a")&&cov.a,bOn=lvl==="b"&&cov.b;
+  bi.style.visibility=(aOn||bOn)?"hidden":"";
+  if(lvl==="b")T.groups.a.style.display=bOn?"none":"";
 }
 function rescale(){
   try{updHintArrow()}catch(e){}
