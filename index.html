@@ -87,7 +87,10 @@ button,select{font-family:inherit;color:inherit}
 .stats b{color:var(--ink)}
 .prog{height:4px;background:#e5e7eb}.prog i{display:block;height:100%;width:0;background:var(--good);transition:width .3s}
 #mapbox{flex:1;position:relative;background:var(--sea);touch-action:none;overflow:hidden}
-svg#map{width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none}
+#relLayer{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#relInner{position:absolute;left:0;top:0;transform-origin:0 0}
+#relInner img{position:absolute;display:block;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none}
+svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none}
 .zoom{position:absolute;right:10px;bottom:12px;display:flex;flex-direction:column;gap:6px}
 .zoom button{width:44px;height:44px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.12);cursor:pointer}
 .msg{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(17,24,39,.85);color:#fff;font-weight:800;
@@ -95,13 +98,17 @@ svg#map{width:100%;height:100%;display:block;user-select:none;-webkit-user-selec
 .msg.show{opacity:1}
 .warn{position:absolute;left:10px;bottom:12px;right:64px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700}
 /* svg */
-.land{fill:var(--land);stroke:#6b7280;stroke-width:1;vector-effect:non-scaling-stroke}
+.land{fill:transparent;stroke:#6b7280;stroke-width:1;vector-effect:non-scaling-stroke}
 .land.dim{fill:var(--other);stroke:#b6bcc6}
 .relief{opacity:1;pointer-events:none}
 .water{fill:var(--sea);stroke:#7fb3d5;stroke-width:.8;vector-effect:non-scaling-stroke;pointer-events:none}
 .water.sea{stroke:none}
 .coast{fill:none;stroke:#6b7280;stroke-width:1.1;vector-effect:non-scaling-stroke;pointer-events:none}
 .hires{pointer-events:none}
+#gLand .land.dim{fill:var(--other)}
+#gLand .land.q:hover{fill:rgba(255,255,255,.18)}
+#gLand .land.g1,#gLand .land.g2,#gLand .land.g3,#gLand .land.gx{fill:transparent}
+#gLand .land.blink{animation:none}
 .hl{fill:transparent;stroke:none;pointer-events:none}
 .hl.g1{fill:rgba(34,197,94,.45)}.hl.g2{fill:rgba(234,179,8,.45)}.hl.g3{fill:rgba(249,115,22,.45)}.hl.gx{fill:rgba(220,38,38,.45)}
 .hl.blink{animation:blinkhl .7s infinite}
@@ -183,7 +190,7 @@ svg#map{width:100%;height:100%;display:block;user-select:none;-webkit-user-selec
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 24.11b</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 24.11c</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -234,6 +241,7 @@ svg#map{width:100%;height:100%;display:block;user-select:none;-webkit-user-selec
   </div>
   <div class="prog"><i id="prog"></i></div>
   <div id="mapbox">
+    <div id="relLayer"><div id="relInner"><img id="baseImg" alt=""><div id="tA"></div><div id="tB"></div></div></div>
     <svg id="map"></svg>
     <div class="msg" id="msg"></div>
     <div class="zoom"><button id="zIn">+</button><button id="zOut">−</button><button id="zFit">⟲</button></div>
@@ -648,8 +656,13 @@ function draw(){
     }
   }
   if(opt.relief&&reliefURL){
-    const attrs={href:reliefURL,x:reliefBox[0],y:reliefBox[1],width:reliefBox[2],height:reliefBox[3],preserveAspectRatio:"none",class:"relief"};
-    const im=el("image",attrs,grel);im.setAttributeNS("http://www.w3.org/1999/xlink","href",reliefURL);
+    const bi=$("#baseImg");if(bi.getAttribute("src")!==reliefURL)bi.src=reliefURL;
+    // sive susedne zemlje samo van reljefa (npr. sever Mađarske), ispod reljefa su providne
+    const [b0,b1,b2,b3]=reliefBox,cp=el("clipPath",{id:"outRel"},defs);
+    el("path",{d:`M-1e5,-1e5H1e5V1e5H-1e5Z M${b0+1},${b1+1}V${b1+b3-1}H${b0+b2-1}V${b1+1}Z`,"clip-rule":"evenodd"},cp);
+    gl.querySelectorAll(".land.dim").forEach(p=>p.setAttribute("clip-path","url(#outRel)"));
+    {const [nx,ny]=P(47.6,12.3),[mx]=P(47.6,24.2);el("rect",{x:nx-2000,y:ny-2000,width:mx-nx+4000,height:2000.4,class:"land dim"},gl)}
+    Object.assign(bi.style,{left:reliefBox[0]+"px",top:reliefBox[1]+"px",width:reliefBox[2]+"px",height:reliefBox[3]+"px",display:""});
     // granice ponovo, preko reljefa
     // susedne zemlje: reljef ostaje, ali malo izbledeo da se istakne Jugoslavija
     if(GEO){const xk=GEO.features.find(f=>featId(f)==="XK");if(xk)el("path",{d:geomPath(xk.geometry),class:"bord kos prov"},grel)}
@@ -657,8 +670,7 @@ function draw(){
   }
   const gw=el("g",{id:"gWater"},svg);svg.insertBefore(gw,gr);
   const ghr=el("g",{id:"gHires"},svg);svg.insertBefore(ghr,gw);
-  const gta=el("g",{id:"gTileA"},svg);svg.insertBefore(gta,gw);
-  const gtb=el("g",{id:"gTileB"},svg);svg.insertBefore(gtb,gw);
+  const gta=$("#tA"),gtb=$("#tB");gta.innerHTML="";gtb.innerHTML="";
   const gbo=el("g",{id:"gBord2"},svg);svg.insertBefore(gbo,gw);
   const lineD2=r=>r.map(([la,lo],i)=>{const [x,y]=P(la,lo);return (i?"L":"M")+x.toFixed(2)+","+y.toFixed(2)}).join("");
   BORDERS.solid.forEach(r=>el("path",{d:lineD2(r),class:"bord2"},gbo));
@@ -689,7 +701,10 @@ function draw(){
     const c=el("circle",{cx:x,cy:y,r:4,class:"city"+(it.c[4]?" cap":"")},g);c.dataset.key="city:"+it.name;G.els["city:"+it.name]=c}
 }
 /* --- zum i pomeranje --- */
-function setVB(v){vb=v;svg.setAttribute("viewBox",v.map(n=>n.toFixed(2)).join(" "));rescale()}
+function syncRel(){if(!vb)return;const b=$("#mapbox").getBoundingClientRect();if(!b.width)return;
+  const sc=Math.min(b.width/vb[2],b.height/vb[3]),ox=(b.width-vb[2]*sc)/2-vb[0]*sc,oy=(b.height-vb[3]*sc)/2-vb[1]*sc;
+  $("#relInner").style.transform=`translate(${ox}px,${oy}px) scale(${sc})`}
+function setVB(v){vb=v;svg.setAttribute("viewBox",v.map(n=>n.toFixed(2)).join(" "));syncRel();rescale()}
 function fit(){
   const box=$("#mapbox").getBoundingClientRect();const b=bboxFor();let [x,y,w,h]=b;
   const ar=box.width/box.height;if(w/h<ar){const nw=h*ar;x-=(nw-w)/2;w=nw}else{const nh=w/ar;y-=(nh-h)/2;h=nh}
@@ -712,9 +727,10 @@ function updateTiles(){
     const x0=Math.floor((lonA-ts.lon0)/dg)-1,x1=Math.floor((lonB-ts.lon0)/dg)+1,y0=Math.floor((ts.lat1-latT)/dg)-1,y1=Math.floor((ts.lat1-latB)/dg)+1;
     for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++){const key=tx+"_"+ty;if(!set.has(key)||map.has(key))continue;
       const lon=ts.lon0+tx*dg,lat=ts.lat1-ty*dg,[px,py]=P(lat,lon),[qx,qy]=P(lat-dg,lon+dg);
-      const src="t6/"+k+"/"+key+".webp";
-      const im=el("image",{href:src,x:px,y:py,width:qx-px+0.02,height:qy-py+0.02,preserveAspectRatio:"none",class:"tile"},T.groups[k]);
-      im.setAttributeNS("http://www.w3.org/1999/xlink","href",src);map.set(key,im)}
+      const src="t7/"+k+"/"+key+".webp";
+      const im=document.createElement("img");im.alt="";im.decoding="async";im.className="tile";
+      Object.assign(im.style,{left:px+"px",top:py+"px",width:(qx-px+0.03)+"px",height:(qy-py+0.03)+"px"});
+      im.src=src;T.groups[k].appendChild(im);map.set(key,im)}
     // skloni pločice daleko van ekrana, da memorija ostane mala
     if(map.size>(k==="b"?80:60))for(const [key,im] of map){const [tx,ty]=key.split("_").map(Number);
       if(tx<x0-3||tx>x1+3||ty<y0-3||ty>y1+3){im.remove();map.delete(key)}}
