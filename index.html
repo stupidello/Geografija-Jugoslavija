@@ -93,12 +93,14 @@ button,select{font-family:inherit;color:inherit}
 #relInner img{position:absolute;display:block;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none}
 svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none}
 .zoom{position:absolute;right:10px;bottom:12px;display:flex;flex-direction:column;gap:6px}
+.zoom button#zTown{display:flex;align-items:center;justify-content:center;color:#6b7280}
+.zoom button#zTown.on{background:#8b7355;border-color:#6b5843;color:#fff}
 .zoom button#zRoad{display:flex;align-items:center;justify-content:center;color:#6b7280}
 .zoom button#zRoad.on{background:#f59e0b;border-color:#d97706;color:#fff}
 #gTown path{pointer-events:none;fill:rgba(90,72,60,.30);stroke:rgba(90,72,60,.35);stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 #gTown path.ol{fill:rgba(220,38,38,.06);stroke:#dc2626;stroke-width:1.8;stroke-dasharray:1 3.2;stroke-linecap:round}
-#gRoads path{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
-#gRoads .rc{stroke:#fff;stroke-width:3.6;opacity:.85}#gRoads .rm{stroke:#e8772e;stroke-width:2}#gRoads .rp{stroke:#e9b949;stroke-width:1.3}#gRoads .rpc{stroke:#fff;stroke-width:2.6;opacity:.7}
+#gRoads path{fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#gRoads .rc{stroke:#fff;stroke-width:calc(var(--k,1)*3.4);opacity:.8}#gRoads .rm{stroke:#e8772e;stroke-width:calc(var(--k,1)*2)}#gRoads .rp{stroke:#e2ad3a;stroke-width:calc(var(--k,1)*1.4)}
 .zoom button{width:44px;height:44px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.12);cursor:pointer}
 .msg{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(17,24,39,.85);color:#fff;font-weight:800;
   padding:6px 12px;border-radius:12px;font-size:14px;pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap}
@@ -197,7 +199,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 24.11i</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 24.11j</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -251,7 +253,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
     <div id="relLayer"><div id="relInner"><img id="baseImg" alt=""><div id="tA"></div><div id="tB"></div></div></div>
     <svg id="map"></svg>
     <div class="msg" id="msg"></div>
-    <div class="zoom"><button id="zIn">+</button><button id="zOut">−</button><button id="zFit">⟲</button><button id="zRoad" title="Putevi" aria-label="Prikaži puteve"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 3L4 21M16 3l4 18M12 4v3M12 11v3M12 18v2"/></svg></button></div>
+    <div class="zoom"><button id="zIn">+</button><button id="zOut">−</button><button id="zFit">⟲</button><button id="zTown" title="Oblici mesta" aria-label="Prikaži oblike mesta"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 20V11l5-4 5 4v9M13 20v-6h8v6M3 20h18M7 20v-4h2v4"/></svg></button><button id="zRoad" title="Putevi" aria-label="Prikaži puteve"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 3L4 21M16 3l4 18M12 4v3M12 11v3M12 18v2"/></svg></button></div>
     <div class="warn hidden" id="warn"></div>
     <button class="harrow hidden" id="hintArrow" aria-label="Pokaži gde je traženo mesto"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
     <button class="resbtn hidden" id="bShowRes"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Rezultat</button>
@@ -761,27 +763,40 @@ function updateTiles(){
 let SHAPES=null,shapesLoad=null;
 function loadShapes(){if(!shapesLoad)shapesLoad=fetch("shapes.json?v=2411i").then(r=>r.json()).then(j=>{SHAPES=j}).catch(()=>{shapesLoad=null});return shapesLoad}
 async function drawTowns(){
-  if(!G||!G.town)return;const g=G.town;await loadShapes();if(!SHAPES||!G||G.town!==g)return;
+  $("#zTown").classList.toggle("on",opt.towns!==false);
+  if(!G||!G.town)return;const g=G.town;g.style.display=opt.towns===false?"none":"";if(opt.towns===false)return;if(g.dataset.done)return;await loadShapes();if(!SHAPES||!G||G.town!==g)return;
   const items=(G.learn?G.all:G.queue)||[];let d="";
   for(const it of items){if(it.t!=="city")continue;const R=SHAPES[it.name];if(!R)continue;
     for(const ring of R){ring.forEach(([la,lo],i)=>{const [x,y]=P(la,lo);d+=(i?"L":"M")+x.toFixed(2)+","+y.toFixed(2)});d+="Z"}}
-  g.innerHTML="";el("path",{d,class:"town"+(opt.townStyle==="line"?" ol":"")},g)}
+  g.innerHTML="";el("path",{d,class:"town"+(opt.townStyle==="line"?" ol":"")},g);g.dataset.done=1}
+$("#zTown").onclick=()=>{opt.towns=opt.towns===false;store.set("yu_opt",opt);drawTowns()};
 /* --- putevi (uključi/isključi) --- */
 let ROADS=null,roadsLoad=null;
-function loadRoads(){if(!roadsLoad)roadsLoad=fetch("roads.json?v=2411g").then(r=>r.json()).then(j=>{ROADS=j}).catch(()=>{roadsLoad=null});return roadsLoad}
-function roadD(list){let d="";for(const str of list){const a=str.split(",");let la=0,lo=0;
-  for(let i=0;i<a.length;i+=2){la+=+a[i];lo+=+a[i+1];const [x,y]=P(la/1e4,lo/1e4);d+=(i?"L":"M")+x.toFixed(2)+","+y.toFixed(2)}}return d}
+function loadRoads(){if(!roadsLoad)roadsLoad=fetch("roads.json?v=2411j").then(r=>r.json()).then(j=>{ROADS=j}).catch(()=>{roadsLoad=null});return roadsLoad}
+function roadPolys(list){const out=[];for(const str of list){const a=str.split(",");let la=0,lo=0,d="",x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(let i=0;i<a.length;i+=2){la+=+a[i];lo+=+a[i+1];const [x,y]=P(la/1e4,lo/1e4);d+=(i?"L":"M")+x.toFixed(1)+","+y.toFixed(1);
+    if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  out.push({d,b:[x0,y0,x1,y1]})}return out}
+// putevi podeljeni u kvadrate, da se crta samo ono što je na ekranu
+function roadChunks(g,list,cls,cas){const C=new Map(),Z=60;
+  for(const r of roadPolys(list)){const k=Math.floor((r.b[0]+r.b[2])/2/Z)+"_"+Math.floor((r.b[1]+r.b[3])/2/Z);
+    let c=C.get(k);if(!c){c={d:"",b:[1e9,1e9,-1e9,-1e9]};C.set(k,c)}c.d+=r.d;
+    c.b=[Math.min(c.b[0],r.b[0]),Math.min(c.b[1],r.b[1]),Math.max(c.b[2],r.b[2]),Math.max(c.b[3],r.b[3])]}
+  const arr=[];for(const c of C.values()){const gg=el("g",{},g);if(cas)el("path",{d:c.d,class:cas},gg);el("path",{d:c.d,class:cls},gg);gg._b=c.b;arr.push(gg)}
+  return arr}
 async function drawRoads(){
   $("#zRoad").classList.toggle("on",!!opt.roads);
   if(!G||!G.roads)return;const g=G.roads;
   if(!opt.roads){g.style.display="none";return}
   g.style.display="";
   if(!g.dataset.done){await loadRoads();if(!ROADS||!G||G.roads!==g)return;
-    const dp=roadD(ROADS.p),dm=roadD(ROADS.m);
-    const gp=el("g",{class:"rpg"},g);el("path",{d:dp,class:"rpc"},gp);el("path",{d:dp,class:"rp"},gp);
-    el("path",{d:dm,class:"rc"},g);el("path",{d:dm,class:"rm"},g);g.dataset.done=1}
+    G.rd={p:roadChunks(el("g",{},g),ROADS.p,"rp",null),m:roadChunks(el("g",{},g),ROADS.m,"rm","rc"),m0:roadChunks(el("g",{},g),ROADS.m0||ROADS.m,"rm","rc")};
+    g.dataset.done=1}
   roadZoom()}
-function roadZoom(){if(!G||!G.roads||!vb)return;const pg=G.roads.querySelector(".rpg");if(pg)pg.style.display=(pxScale()/(KX*S)<1/120)?"":"none"}
+function roadZoom(){if(!G||!G.rd||!vb||!opt.roads)return;const k=pxScale(),dpp=k/(KX*S),near=dpp<1/120,fine=dpp<1/60;
+  const g=G.roads;g.style.setProperty("--k",k);
+  const vis=(arr,on)=>{for(const c of arr){const b=c._b,v=on&&b[2]>=vb[0]&&b[0]<=vb[0]+vb[2]&&b[3]>=vb[1]&&b[1]<=vb[1]+vb[3];c.style.display=v?"":"none"}};
+  vis(G.rd.p,near);vis(G.rd.m,fine);vis(G.rd.m0,!fine)}
 $("#zRoad").onclick=()=>{opt.roads=!opt.roads;store.set("yu_opt",opt);drawRoads()};
 function rescale(){
   roadZoom();
