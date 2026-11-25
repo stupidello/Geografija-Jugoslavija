@@ -117,6 +117,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
 .zoom .lyrMenu button#zTown.on{background:#8b7355;border-color:#6b5843}
 .zoom .lyrMenu button#zRoad.on{background:#f59e0b;border-color:#d97706}
 #gNames .lab{opacity:.92}
+#gTown path.townc{fill:rgba(90,72,60,.08);stroke:rgba(90,72,60,.55);stroke-width:1;stroke-dasharray:3 2.5;fill-rule:evenodd}
 #gTown path{pointer-events:none;fill:rgba(90,72,60,.30);stroke:rgba(90,72,60,.35);stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 #gTown path.ol{fill:rgba(220,38,38,.06);stroke:#dc2626;stroke-width:1.8;stroke-dasharray:1 3.2;stroke-linecap:round}
 #gRoads path{fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
@@ -223,7 +224,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11g</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11h</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -791,14 +792,16 @@ function updateTiles(){
 }
 /* --- oblici mesta iz kviza --- */
 let SHAPES=null,shapesLoad=null;
-function loadShapes(){if(!shapesLoad)shapesLoad=fetch("shapes.json?v=2511g").then(r=>r.json()).then(j=>{SHAPES=j}).catch(()=>{shapesLoad=null});return shapesLoad}
+function loadShapes(){if(!shapesLoad)shapesLoad=fetch("shapes.json?v=2511h").then(r=>r.json()).then(j=>{SHAPES=j}).catch(()=>{shapesLoad=null});return shapesLoad}
 async function drawTowns(){
   $("#zTown").classList.toggle("on",opt.towns!==false);
   if(!G||!G.town)return;const g=G.town;g.style.display=opt.towns===false?"none":"";if(opt.towns===false)return;if(g.dataset.done)return;await loadShapes();if(!SHAPES||!G||G.town!==g)return;
-  const items=(G.learn?G.all:G.queue)||[];let d="";
-  for(const it of items){if(it.t!=="city")continue;const R=SHAPES[it.name];if(!R)continue;
-    for(const ring of R){ring.forEach(([la,lo],i)=>{const [x,y]=P(la,lo);d+=(i?"L":"M")+x.toFixed(2)+","+y.toFixed(2)});d+="Z"}}
-  g.innerHTML="";el("path",{d,class:"town"+(opt.townStyle==="line"?" ol":"")},g);g.dataset.done=1;drawNames()}
+  const items=(G.learn?G.all:G.queue)||[];let d="",dc="";
+  const rd=R=>{let o="";for(const ring of R){ring.forEach(([la,lo],i)=>{const [x,y]=P(la,lo);o+=(i?"L":"M")+x.toFixed(2)+","+y.toFixed(2)});o+="Z"}return o};
+  for(const it of items){if(it.t!=="city")continue;const S=SHAPES[it.name];if(!S)continue;
+    if(Array.isArray(S)){d+=rd(S);continue}   // stari format
+    if(S.c)dc+=rd(S.c);if(S.b)d+=rd(S.b)}
+  g.innerHTML="";el("path",{d:dc,class:"townc"},g);el("path",{d,class:"town"},g);g.dataset.done=1;drawNames()}
 $("#zTown").onclick=()=>{opt.towns=opt.towns===false;store.set("yu_opt",opt);drawTowns();drawNames()};
 /* --- imena pogođenih mesta: ispod tačke, iznad ako se preklapa --- */
 function layoutCityLabels(k){
@@ -813,8 +816,8 @@ function layoutCityLabels(k){
     t.setAttribute("x",x);t.setAttribute("y",yy);placed.push(b)}}
 /* --- imena mesta (uključi/isključi) --- */
 function townTop(name){ // vrh osenčenog oblika mesta (y u jedinicama mape) ili null
-  if(opt.towns===false||!SHAPES||!SHAPES[name])return null;let t=1e9;
-  for(const ring of SHAPES[name])for(const [la,lo] of ring){const y=P(la,lo)[1];if(y<t)t=y}return t}
+  if(opt.towns===false||!SHAPES||!SHAPES[name])return null;let t=1e9;const S=SHAPES[name];
+  for(const ring of (Array.isArray(S)?S:(S.b||[])))for(const [la,lo] of ring){const y=P(la,lo)[1];if(y<t)t=y}return t}
 function drawNames(){
   const on=opt.names!==false;$("#zNames").classList.toggle("on",on);
   if(G&&G.layers&&G.layers.glab)G.layers.glab.style.display=on?"":"none"}
