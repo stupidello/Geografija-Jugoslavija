@@ -210,7 +210,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11b</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -663,7 +663,7 @@ function draw(){
   svg.innerHTML="";
   const defs=el("defs",{},svg);
   const gl=el("g",{id:"gLand"},svg), grel=el("g",{id:"gRel"},svg), gr=el("g",{id:"gRiv"},svg), glab=el("g",{id:"gLab"},svg), gc=el("g",{id:"gCity"},svg), gtmp=el("g",{id:"gTmp"},svg);
-  const gtw=el("g",{id:"gTown"},svg);svg.insertBefore(gtw,gc);G.town=gtw;drawTowns();
+  const gtw=el("g",{id:"gTown"},svg);svg.insertBefore(gtw,glab);G.town=gtw;drawTowns();
   G.names=el("g",{id:"gNames"},svg);drawNames();
   G.layers={gl,gr,gc,glab,gtmp};
   const qCountries=G.all.some(i=>i.t==="country");
@@ -932,9 +932,7 @@ function stopWave(){clearInterval(waveT);waveT=null;waveXY=null;try{updHintArrow
 function addLabel(it,keep,cls,ms,parent){
   let [x,y,dx]=labelPos(it);const t=el("text",{x,y,class:"lab"+(it.t==="river"?" r":it.t==="country"?" c":it.t==="mount"?" m":"")+(cls?" "+cls:"")},parent||(keep?G.layers.glab:G.layers.gtmp));
   t.dataset.x=x;
-  if(it.t==="city"){const top=townTop(it.name);const y0=top!=null&&top<y?top:y;t.setAttribute("y",y0);t.dataset.y=y0;t.dataset.dy=top!=null&&top<y?-3:-7;
-    t.setAttribute("text-anchor","middle");t.setAttribute("dominant-baseline","auto")}
-  else{t.dataset.dx=dx;t.setAttribute("dominant-baseline","middle");if(it.t==="country")t.setAttribute("text-anchor","middle")}
+  t.dataset.dx=dx;t.setAttribute("dominant-baseline","middle");if(it.t==="country")t.setAttribute("text-anchor","middle");
   t.textContent=it.name;if(!parent)rescale();if(!keep)setTimeout(()=>t.remove(),ms||1500);return t;
 }
 function flash(it,bad){addLabel(it,false,bad?"flash":"")}
