@@ -1,0 +1,16 @@
+# ručno: izohipsa podnožja (m) i najveća udaljenost od vrha (km) za svaku planinu
+T={"Kopaonik":(900,40),"Zlatibor":(900,20),"Tara":(900,22),"Fruška gora":(250,40),"Avala":(250,7),"Rudnik":(600,12),
+"Stara planina":(1000,40),"Suva planina":(900,20),"Rtanj":(700,10),"Golija":(1100,22),"Zlatar":(1000,12),"Javor":(1000,15),
+"Maljen":(700,15),"Povlen":(700,15),"Cer":(300,15),"Vršačke planine":(250,10),"Homoljske planine":(600,20),"Beljanica":(900,15),
+"Kučaj":(800,20),"Ozren":(700,10),"Besna kobila":(1300,15),"Radan":(800,18),"Jastrebac":(800,20),"Goč":(900,12),"Bukulja":(350,7),
+"Venčac":(350,6),"Kosmaj":(300,8),"Ovčar i Kablar":(400,7),"Jelica":(550,14),"Gledićke planine":(600,15),"Čemerno":(1000,12),
+"Mučanj":(1000,10),"Suvobor":(650,12),"Medvednik":(800,10),"Sokolske planine":(600,15),"Devica":(750,10),"Tupižnica":(650,10),
+"Vidlič":(900,20),"Miroč":(400,15),"Deli Jovan":(550,12),"Veliki Krš":(600,8),"Kukavica":(900,15),"Rogozna":(1000,18),
+"Šar planina":(1400,45),"Prokletije":(1500,45),"Velebit":(800,75),"Dinara":(1000,30),"Biokovo":(700,20),"Učka":(600,12),
+"Medvednica":(400,15),"Papuk":(450,20),"Risnjak":(1000,12),"Mosor":(500,12),"Žumberak":(500,20),"Bjelašnica":(1300,15),
+"Jahorina":(1300,15),"Igman":(1000,12),"Maglić":(1500,12),"Vlašić":(1100,15),"Kozara":(300,25),"Treskavica":(1400,12),
+"Prenj":(1200,15),"Čvrsnica":(1200,12),"Romanija":(1100,15),"Zelengora":(1400,18),"Majevica":(500,25),"Vranica":(1300,15),
+"Grmeč":(800,30),"Durmitor":(1500,20),"Lovćen":(1000,10),"Bjelasica":(1300,18),"Orjen":(1000,15),"Sinjajevina":(1500,25),
+"Komovi":(1600,10),"Rumija":(600,12),"Triglav":(1600,15),"Kamniške Alpe":(1200,20),"Karavanke":(1200,35),"Pohorje":(700,25),
+"Snežnik":(1000,12),"Korab":(1600,15),"Pelister":(1200,15),"Jakupica":(1300,20),"Osogovo":(1200,25),"Galičica":(1100,15),
+"Kožuf":(1200,15),"Bistra":(1300,15),"Belasica":(700,25)}
