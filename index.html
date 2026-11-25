@@ -223,7 +223,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11f</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11g</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -791,7 +791,7 @@ function updateTiles(){
 }
 /* --- oblici mesta iz kviza --- */
 let SHAPES=null,shapesLoad=null;
-function loadShapes(){if(!shapesLoad)shapesLoad=fetch("shapes.json?v=2411i").then(r=>r.json()).then(j=>{SHAPES=j}).catch(()=>{shapesLoad=null});return shapesLoad}
+function loadShapes(){if(!shapesLoad)shapesLoad=fetch("shapes.json?v=2511g").then(r=>r.json()).then(j=>{SHAPES=j}).catch(()=>{shapesLoad=null});return shapesLoad}
 async function drawTowns(){
   $("#zTown").classList.toggle("on",opt.towns!==false);
   if(!G||!G.town)return;const g=G.town;g.style.display=opt.towns===false?"none":"";if(opt.towns===false)return;if(g.dataset.done)return;await loadShapes();if(!SHAPES||!G||G.town!==g)return;
