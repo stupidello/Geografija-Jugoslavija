@@ -224,7 +224,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11h</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 25.11i</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -801,7 +801,7 @@ async function drawTowns(){
   for(const it of items){if(it.t!=="city")continue;const S=SHAPES[it.name];if(!S)continue;
     if(Array.isArray(S)){d+=rd(S);continue}   // stari format
     if(S.c)dc+=rd(S.c);if(S.b)d+=rd(S.b)}
-  g.innerHTML="";el("path",{d:dc,class:"townc"},g);el("path",{d,class:"town"},g);g.dataset.done=1;drawNames()}
+  g.innerHTML="";el("path",{d,class:"town"},g);g.dataset.done=1;drawNames()}
 $("#zTown").onclick=()=>{opt.towns=opt.towns===false;store.set("yu_opt",opt);drawTowns();drawNames()};
 /* --- imena pogođenih mesta: ispod tačke, iznad ako se preklapa --- */
 function layoutCityLabels(k){
