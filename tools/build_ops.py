@@ -48,6 +48,11 @@ for f in json.load(open('/mnt/user-data/uploads/export_1.geojson'))['features']:
     if not re.match(r'^(Grad|Općina) ',nm):continue
     n=re.sub(r'^(Grad|Općina)\s+','',nm)
     add(n,'HR',ps)
+# Slovenija
+for f in json.load(open('/mnt/user-data/uploads/60ee41fa-export_2.geojson'))['features']:
+    if f['geometry']['type'] not in('Polygon','MultiPolygon') or f['properties'].get('admin_level')!='8':continue
+    ps=f['geometry']['coordinates'] if f['geometry']['type']=='MultiPolygon' else [f['geometry']['coordinates']]
+    add(f['properties'].get('name').split(' / ')[0],'SI',ps)
 # Grad Zagreb nije u fajlu (viši nivo): rupa okružena opštinama oko njega
 K2=1000;x0,y1=15.6,46.05;W,H=int(0.8*K2*0.72),int(0.5*K2)
 m=np.zeros((H,W),np.uint8)
