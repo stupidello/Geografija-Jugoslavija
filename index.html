@@ -120,8 +120,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
 #gTown path.townc{fill:rgba(90,72,60,.08);stroke:rgba(90,72,60,.55);stroke-width:1;stroke-dasharray:3 2.5;fill-rule:evenodd}
 #mapbox.flagmode #gCity .city,#mapbox.flagmode #gCity .chit,#mapbox.flagmode #gCity .mount,#mapbox.flagmode #gTown,#mapbox.flagmode #gMount{display:none}
 #mapbox.flagmode svg#map{cursor:crosshair}
-.hintc{fill:rgba(37,99,235,.10);stroke:#2563eb;stroke-dasharray:6 4;vector-effect:non-scaling-stroke;stroke-width:2;pointer-events:none}
-.hintc.last{fill:rgba(22,163,74,.16);stroke:#16a34a;stroke-dasharray:none}
+.hintc{pointer-events:none}
 .flag{pointer-events:none}.flag .pole{stroke:#111827;stroke-width:1.6}.flag .cloth{stroke:#111827;stroke-width:.8}
 .flag.ok .cloth{fill:#16a34a}.flag.near .cloth{fill:#f59e0b}.flag.bad .cloth{fill:#dc2626}.flag.true .cloth{fill:#2563eb}
 #gTown path{pointer-events:none;fill:rgba(90,72,60,.30);stroke:rgba(90,72,60,.35);stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round}
@@ -230,7 +229,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 26.11</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 26.11b</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -941,7 +940,11 @@ function hintCircle(cur,lvl){ // lvl 1..3 sve uži krug (centar pomeren da ne bu
   const [tx,ty]=P(cur.c[1],cur.c[2]);const R=[0,120,50,15,4][lvl]*KM;
   if(!G.hoff)G.hoff=[Math.random()*2*Math.PI,Math.random()];
   const off=lvl>=4?0:R*0.55*Math.sqrt(G.hoff[1]),cx=tx+off*Math.cos(G.hoff[0]),cy=ty+off*Math.sin(G.hoff[0]);
-  el("circle",{cx,cy,r:R,class:"hintc"+(lvl>=4?" last":"")},G.layers.gtmp);
+  // magla van kruga: radijalni prelaz, bez oštre linije
+  const g=el("g",{class:"hintc"},G.layers.gtmp),id="fog"+Date.now();
+  const gr=el("radialGradient",{id,gradientUnits:"userSpaceOnUse",cx,cy,r:R*1.25},el("defs",{},g));
+  [[0,0],[0.7,0],[0.86,.16],[1,.32]].forEach(([o,a])=>el("stop",{offset:o,"stop-color":"#eef2f7","stop-opacity":a},gr));
+  el("rect",{x:-2e4,y:-2e4,width:4e4,height:4e4,fill:`url(#${id})`,"pointer-events":"none"},g);
   // poslednji krug je mali: približi kartu da se lepo vidi
   if(lvl>=4){const b=$("#mapbox").getBoundingClientRect(),W=Math.min(vb[2],90*KM*KX/KX),H=W*b.height/b.width;setVB([cx-W/2,cy-H/2,W,H])}
   else if(cx<vb[0]||cx>vb[0]+vb[2]||cy<vb[1]||cy>vb[1]+vb[3])setVB([cx-vb[2]/2,cy-vb[3]/2,vb[2],vb[3]]);
@@ -949,13 +952,13 @@ function hintCircle(cur,lvl){ // lvl 1..3 sve uži krug (centar pomeren da ne bu
 function flagClick(px,py){
   const cur=G.queue[G.idx];const [x,y]=toSvg(px,py);
   if(G.tries>=4){ // posle 4 promašaja: samo uči — klikni u zeleni krug
-    const [tx,ty]=P(cur.c[1],cur.c[2]);if(distKm(x,y,tx,ty)<=4){dropFlag(x,y,"true");flagDone(cur,0,"Zapamti: "+cur.name)}else say("Klikni u zeleni krug");return}
+    const [tx,ty]=P(cur.c[1],cur.c[2]);if(distKm(x,y,tx,ty)<=4){dropFlag(x,y,"true");flagDone(cur,0,"Zapamti: "+cur.name)}else say("Klikni u čisti krug");return}
   const [q,d]=flagScore(cur,x,y),mult=[1,.75,.5,.25][G.tries];
   if(q>0){const pts=Math.round(100*q*mult);dropFlag(x,y,q===1?"ok":"near");
     flagDone(cur,pts,(q===1?"Tačno! ":`Blizu, ${d.toFixed(0)} km. `)+`+${pts}`);return}
   G.tries++;dropFlag(x,y,"bad");
   if(G.tries>=4){hintCircle(cur,4);say(`Promašaj ${d.toFixed(0)} km. Evo gde je ${cur.name}`);speak(cur.name)}
-  else{hintCircle(cur,G.tries);say(`Promašaj, ${d.toFixed(0)} km. Traži u krugu`)}}
+  else{hintCircle(cur,G.tries);say(`Promašaj, ${d.toFixed(0)} km. Traži u čistom delu mape`)}}
 function flagDone(cur,pts,msg){
   G.pts+=pts;if(pts>=100)G.first++;else G.miss.push(cur.name);
   stopWave();G.layers.gtmp.querySelectorAll(".hintc").forEach(c=>c.remove());
