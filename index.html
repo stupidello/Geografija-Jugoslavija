@@ -121,6 +121,10 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
 #mapbox.flagmode #gCity .city,#mapbox.flagmode #gCity .chit,#mapbox.flagmode #gCity .mount,#mapbox.flagmode #gTown,#mapbox.flagmode #gMount{display:none}
 #mapbox.flagmode svg#map{cursor:crosshair}
 .hintc{pointer-events:none}
+#gFres path,#gFres circle{pointer-events:none;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.fmuni{fill:rgba(71,85,105,.07);stroke:rgba(71,85,105,.55);stroke-width:1.2;stroke-dasharray:4 3}
+.ftown{fill:rgba(90,72,60,.42);stroke:rgba(90,72,60,.5);stroke-width:.8}
+.fres.g1 .ftown{fill:rgba(22,163,74,.5);stroke:#15803d}.fres.g2 .ftown{fill:rgba(234,179,8,.55);stroke:#a16207}.fres.g3 .ftown{fill:rgba(249,115,22,.5);stroke:#c2410c}.fres.gx .ftown{fill:rgba(220,38,38,.45);stroke:#b91c1c}
 .flag{pointer-events:none}.flag .pole{stroke:#111827;stroke-width:1.6}.flag .cloth{stroke:#111827;stroke-width:.8}
 .flag.ok .cloth{fill:#16a34a}.flag.near .cloth{fill:#f59e0b}.flag.bad .cloth{fill:#dc2626}.flag.true .cloth{fill:#2563eb}
 #gTown path{pointer-events:none;fill:rgba(90,72,60,.30);stroke:rgba(90,72,60,.35);stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round}
@@ -234,7 +238,7 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
   <div class="panel">
     <div class="mhead">
       <svg viewBox="0 0 56 56" width="48" height="48" aria-hidden="true"><path id="logoPath" fill="#fff" fill-opacity=".95"></path></svg>
-      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 26.11d</small></span><b>Jugoslavija</b></div>
+      <div class="mtitle"><span>GEOPLAY <small style="letter-spacing:0;font-weight:700;color:rgba(255,255,255,.6)">· verzija 26.11e</small></span><b>Jugoslavija</b></div>
       <button class="gbtn" id="bInfo" aria-label="O igri i izvorima"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button class="gbtn" id="bVol" aria-label="Jačina glasa" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="spkPath" d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"></path></svg></button>
       <div class="pop hidden" id="volPop">
@@ -253,7 +257,8 @@ svg#map{position:relative;z-index:1;width:100%;height:100%;display:block;user-se
       <div class="seg" role="group" aria-label="Način igre">
         <button id="segPin">Pin<small>pogođena ostaju</small></button>
         <button id="segHard">Pin (teško)<small>pogođena se ne vide</small></button>
-        <button id="segFlag">Zastavica<small>poeni po blizini</small></button>
+        <button id="segFlag">Zastavica<small>ostaju na mapi</small></button>
+        <button id="segFlagH">Zastavica (teško)<small>nestaju</small></button>
       </div>
       <div class="mplay">
         <button class="bl" id="bLearn"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5"></path></svg>Uči</button>
@@ -501,7 +506,7 @@ function renderMenu(){
   $("#logoPath").setAttribute("d",SIL.YU);
   const rg=$("#regions");rg.innerHTML="";
   REGIONS.forEach(([k])=>{const b=document.createElement("button");b.className="rcard"+(opt.region===k?" on":"");b.setAttribute("aria-pressed",opt.region===k);
-    const best=store.get(`yu_best_${k}_${opt.mode}${opt.flag?"_f":opt.hard?"_h":""}`,null);
+    const best=store.get(`yu_best_${k}_${opt.mode}${opt.flag?(opt.hard?"_fh":"_f"):opt.hard?"_h":""}`,null);
     b.innerHTML=`<svg viewBox="0 0 56 56" width="42" height="42" aria-hidden="true"><path d="${SIL[RSIL[k]]}"></path></svg><span class="rn">${RNAME[k]}</span><span class="rb">${best!=null?"★ "+best+"%":""}</span>`;
     b.onclick=()=>{opt.region=k;save();renderMenu()};rg.appendChild(b)});
   const md=$("#modes");md.innerHTML="";
@@ -511,16 +516,16 @@ function renderMenu(){
     b.onclick=()=>{opt.mode=k;save();renderMenu()};md.appendChild(b)});
   const n=itemsFor(opt.mode).length;
   $("#summary").textContent=`${RNAME[opt.region]} · ${MLABEL[opt.mode]} · ${n} pojmova`;
-  const sty=opt.flag?"flag":opt.hard?"hard":"pin";
-  for(const [id,v] of [["#segPin","pin"],["#segHard","hard"],["#segFlag","flag"]]){$(id).classList.toggle("on",sty===v);$(id).setAttribute("aria-pressed",sty===v)}
+  const sty=opt.flag?(opt.hard?"flagh":"flag"):opt.hard?"hard":"pin";
+  for(const [id,v] of [["#segPin","pin"],["#segHard","hard"],["#segFlag","flag"],["#segFlagH","flagh"]]){$(id).classList.toggle("on",sty===v);$(id).setAttribute("aria-pressed",sty===v)}
   $("#scPath").setAttribute("d",SIL[RSIL[opt.region]]);$("#scName").textContent=opt.region==="YU"?"Cela Jugoslavija":RNAME[opt.region]==="Makedonija"?"Severna Makedonija":RNAME[opt.region];
-  const c=m=>itemsFor(m).length,best=store.get(`yu_best_${opt.region}_${opt.mode}${opt.flag?"_f":opt.hard?"_h":""}`,null);
+  const c=m=>itemsFor(m).length,best=store.get(`yu_best_${opt.region}_${opt.mode}${opt.flag?(opt.hard?"_fh":"_f"):opt.hard?"_h":""}`,null);
   $("#scStats").textContent=`${c("cities")} gradova · ${c("rivers")} reka · ${c("mountains")} planina · ${best!=null?"rekord "+best+"%":"još nema rekorda"}`;
   updVolUI();
 }
 function updVolUI(){$("#spkPath").setAttribute("d",opt.vol>0?SPK_ON:SPK_OFF);$("#volVal").textContent=opt.vol>0?opt.vol:"isklj.";$("#volRange").value=opt.vol;
   $("#bMuteMenu").textContent=opt.vol>0?"Utišaj":"Uključi zvuk";try{updMute()}catch(e){}}
-$("#segPin").onclick=()=>{opt.hard=false;opt.flag=false;save();renderMenu()};$("#segHard").onclick=()=>{opt.hard=true;opt.flag=false;save();renderMenu()};$("#segFlag").onclick=()=>{opt.flag=true;opt.hard=false;save();renderMenu()};
+$("#segPin").onclick=()=>{opt.hard=false;opt.flag=false;save();renderMenu()};$("#segHard").onclick=()=>{opt.hard=true;opt.flag=false;save();renderMenu()};$("#segFlag").onclick=()=>{opt.flag=true;opt.hard=false;save();renderMenu()};$("#segFlagH").onclick=()=>{opt.flag=true;opt.hard=true;save();renderMenu()};
 $("#bVol").onclick=e=>{e.stopPropagation();const p=$("#volPop");p.classList.toggle("hidden");$("#bVol").setAttribute("aria-expanded",!p.classList.contains("hidden"))};
 $("#volPop").onclick=e=>e.stopPropagation();
 document.addEventListener("click",()=>{$("#volPop").classList.add("hidden");$("#bVol").setAttribute("aria-expanded","false")});
@@ -693,7 +698,7 @@ function draw(){
   const defs=el("defs",{},svg);
   const gl=el("g",{id:"gLand"},svg), grel=el("g",{id:"gRel"},svg), gr=el("g",{id:"gRiv"},svg), glab=el("g",{id:"gLab"},svg), gc=el("g",{id:"gCity"},svg), gtmp=el("g",{id:"gTmp"},svg);
   const gtw=el("g",{id:"gTown"},svg);svg.insertBefore(gtw,glab);G.town=gtw;drawTowns();
-  G.layers={gl,gr,gc,glab,gtmp};drawNames();
+  G.layers={gl,gr,gc,glab,gtmp};G.fres=el("g",{id:"gFres"},svg);svg.insertBefore(G.fres,glab);drawNames();
   const qCountries=G.all.some(i=>i.t==="country");
   if(GEO){
     const xk=GEO.features.find(f=>featId(f)==="XK");
@@ -960,31 +965,33 @@ function hintCircle(cur,lvl){ // lvl 1..3 sve uži krug (centar pomeren da ne bu
   const g=el("g",{class:"hintc"},G.layers.gtmp),id="fog"+Date.now();
   const gr=el("radialGradient",{id,gradientUnits:"userSpaceOnUse",cx,cy,r:R*1.25},el("defs",{},g));
   [[0,0],[0.7,0],[0.86,.16],[1,.32]].forEach(([o,a])=>el("stop",{offset:o,"stop-color":"#eef2f7","stop-opacity":a},gr));
-  el("rect",{x:-2e4,y:-2e4,width:4e4,height:4e4,fill:`url(#${id})`,"pointer-events":"none"},g);
-  // poslednji krug je mali: približi kartu da se lepo vidi
-  if(lvl>=4){const b=$("#mapbox").getBoundingClientRect(),W=Math.min(vb[2],90*KM*KX/KX),H=W*b.height/b.width;setVB([cx-W/2,cy-H/2,W,H])}
-  else if(cx<vb[0]||cx>vb[0]+vb[2]||cy<vb[1]||cy>vb[1]+vb[3])setVB([cx-vb[2]/2,cy-vb[3]/2,vb[2],vb[3]]);
-  waveXY=[cx,cy];updHintArrow()}
+  el("rect",{x:-2e4,y:-2e4,width:4e4,height:4e4,fill:`url(#${id})`,"pointer-events":"none"},g);}
+
 function flagClick(px,py){
   const cur=G.queue[G.idx];const [x,y]=toSvg(px,py);
   if(G.tries>=4){ // posle 4 promašaja: samo uči — klikni u zeleni krug
-    const [tx,ty]=P(cur.c[1],cur.c[2]);if(distKm(x,y,tx,ty)<=4){dropFlag(x,y,"true");flagDone(cur,0,"Zapamti: "+cur.name)}else say("Klikni u čisti krug");return}
+    const [tx,ty]=P(cur.c[1],cur.c[2]);if(distKm(x,y,tx,ty)<=4){dropFlag(x,y,"bad");flagDone(cur,0,"Zapamti: "+cur.name)}else say("Klikni u čisti krug");return}
   const [q,d]=flagScore(cur,x,y),mult=[1,.75,.5,.25][G.tries];
   if(q>0){const pts=Math.round(100*q*mult);dropFlag(x,y,q===1?"ok":"near");
-    if(q<1){const u=muniOf(cur);if(u){const h=el("path",{d:ringsD(u.r),class:"munihl flagtmp"},G.layers.gtmp);G.layers.gtmp.prepend(h);G.noTarget=true}}
+
     flagDone(cur,pts,(q===1?"Tačno! ":`Blizu, ${d.toFixed(0)} km. `)+`+${pts}`);return}
   G.tries++;dropFlag(x,y,"bad");
-  if(G.tries>=4){hintCircle(cur,4);say(`Promašaj ${d.toFixed(0)} km. Evo gde je ${cur.name}`);speak(cur.name)}
+  if(G.tries>=4){hintCircle(cur,4);say(`Promašaj ${d.toFixed(0)} km. ${cur.name} je u malom čistom krugu`);speak(cur.name)}
   else{hintCircle(cur,G.tries);say(`Promašaj, ${d.toFixed(0)} km. Traži u čistom delu mape`)}}
 function flagDone(cur,pts,msg){
   G.pts+=pts;if(pts>=100)G.first++;else G.miss.push(cur.name);
-  stopWave();G.layers.gtmp.querySelectorAll(".hintc").forEach(c=>c.remove());
-  const [tx,ty]=P(cur.c[1],cur.c[2]);if(!G.noTarget)dropFlag(tx,ty,"true");G.noTarget=false;
-  if(cur.t==="mount"&&G.els["mount:"+cur.name])G.els["mount:"+cur.name].classList.add(pts>=100?"g1":pts>=50?"g2":pts>0?"g3":"gx");
-  (G.res||(G.res={}))[cur.t+":"+cur.name]=pts>=100?"g1":pts>=50?"g2":pts>0?"g3":"gx";
-  addLabel(cur,false,"",2200);say(msg);
+  G.layers.gtmp.querySelectorAll(".hintc").forEach(c=>c.remove());
+  const cls=pts>=100?"g1":pts>=50?"g2":pts>0?"g3":"gx";(G.res||(G.res={}))[cur.t+":"+cur.name]=cls;
+  const g=el("g",{class:"fres "+cls},G.fres);
+  const u=muniOf(cur);if(u)el("path",{d:ringsD(u.r),class:"fmuni"},g);
+  if(cur.t==="mount"){const sh=MSHAPES[cur.name];if(sh)el("path",{d:ringsD([sh]),class:"ftown"},g)}
+  else{const S=SHAPES&&SHAPES[cur.name];const R=S?(Array.isArray(S)?S:(S.b||S.c)):null;
+    if(R&&R.length)el("path",{d:ringsD(R),class:"ftown"},g);else{const [tx,ty]=P(cur.c[1],cur.c[2]);el("circle",{cx:tx,cy:ty,r:1.2*KM,class:"ftown"},g)}}
+  const fl=[...G.layers.gtmp.querySelectorAll(".flag")];fl.slice(0,-1).forEach(f=>f.remove());if(fl.length&&pts>0)g.appendChild(fl[fl.length-1]);else if(fl.length)fl[fl.length-1].remove();   // ostaje samo zastavica koja je pogodila
+  addLabel(cur,!opt.hard,"",2200);say(msg);
+  if(opt.hard)setTimeout(()=>g.remove(),2200);
   G.idx++;G.hoff=null;$("#prog").style.width=(G.idx/G.queue.length*100)+"%";$("#sScore").textContent=G.pts;
-  G.busy=true;setTimeout(()=>{G.busy=false;G.layers.gtmp.querySelectorAll(".flag,.flagtmp").forEach(f=>f.remove());next()},1500)}
+  G.busy=true;setTimeout(()=>{G.busy=false;next()},1100)}
 function clickAt(px,py,tgt){
   if(!G)return;
   if(G.flag&&!G.busy){const cur=G.queue[G.idx];if(cur&&(cur.t==="city"||cur.t==="mount")){flagClick(px,py);return}}const key=keyFromPoint(px,py,tgt);if(!key)return;
@@ -1060,7 +1067,7 @@ updMute();
 function finish(){
   clearInterval(timer);const pct=G.flag?Math.round(G.pts/G.queue.length):Math.round(G.first/G.queue.length*100),s=(Date.now()-G.start)/1000|0;
   $("#endPct").textContent=pct+"%";$("#endT").textContent=pct>=90?"Odlično! 🏆":pct>=70?"Bravo!":"Dobro je, vežbaj još!";
-  let rec="";const k=`yu_best_${opt.region}_${opt.mode}${opt.flag?"_f":opt.hard?"_h":""}`;
+  let rec="";const k=`yu_best_${opt.region}_${opt.mode}${opt.flag?(opt.hard?"_fh":"_f"):opt.hard?"_h":""}`;
   if(!G.practice){const b=store.get(k,null);if(b==null||pct>b){store.set(k,pct);if(b!=null)rec=" · 🏆 novi rekord!"}}
   $("#endInfo").textContent=(G.flag?`Poeni: ${G.pts}/${G.queue.length*100} · tačno iz prve: ${G.first}`:`Iz prve: ${G.first}/${G.queue.length}`)+` · vreme ${s/60|0}:${String(s%60).padStart(2,"0")}${rec}`;
   $("#endMiss").innerHTML=G.miss.map(n=>`<span>${n}</span>`).join("");
